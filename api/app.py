@@ -1,3 +1,4 @@
+import os
 import random
 import smtplib
 from email.mime.text import MIMEText
@@ -12,52 +13,25 @@ app = Flask(__name__)
 SMTP_SERVER = "smtp.zoho.com"
 SMTP_PORT = 587
 SENDER_EMAIL = "dev_minhaz@zohomail.com"
-SENDER_PASSWORD = "3357GAS8KSPr"
+# পাসওয়ার্ডটি আমরা রেন্ডার ড্যাশবোর্ড থেকে সেট করবো (নিরাপত্তার জন্য)
+SENDER_PASSWORD = os.environ.get("SMTP_PASSWORD", "3357GAS8KSPr") 
 
-# ওটিপি স্টোরেজ
 otp_db = {}
 
 def get_styled_email(otp):
     return f"""
     <html>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9;">
-        <table width="100%" bgcolor="#f4f7f9" cellpadding="0" cellspacing="0">
-            <tr>
-                <td align="center" style="padding: 20px 0;">
-                    <table width="450" bgcolor="#ffffff" style="border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden;">
-                        <tr>
-                            <td bgcolor="#007bff" style="padding: 30px; text-align: center; color: #ffffff;">
-                                <h1 style="margin: 0; font-size: 26px;">Minhaz Security LTD</h1>
-                                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Your Trusted Security Partner</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 40px 30px; color: #333333; line-height: 1.6;">
-                                <h3 style="margin-top: 0; color: #007bff;">Assalamualikum sir!!</h3>
-                                <p style="font-size: 15px;">Welcome to our service. Thanks for using our service. We do our best to keep your account secure. ✊</p>
-                                
-                                <div style="margin: 30px 0; text-align: center; background: #f8f9fa; padding: 30px; border-radius: 12px; border: 1px dashed #007bff;">
-                                    <p style="margin: 0 0 10px 0; font-size: 12px; color: #666666; font-weight: bold; letter-spacing: 1px;">YOUR VERIFICATION CODE</p>
-                                    <h2 style="margin: 0; font-size: 42px; color: #007bff; letter-spacing: 8px;">{otp}</h2>
-                                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #dc3545; font-weight: 500;">⌛ Expiring in 3 minutes</p>
-                                </div>
-
-                                <p style="font-size: 13px; color: #666666; font-style: italic;">
-                                    Please do not share this code with anyone. Our support team will never ask for your OTP.
-                                </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 20px; text-align: center; background: #fdfdfd; border-top: 1px solid #eeeeee;">
-                                <p style="margin: 0; font-size: 11px; color: #999999;">
-                                    &copy; 2026 <b>Minhaz Security LTD</b>. All rights reserved.
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+    <body style="margin: 0; padding: 0; font-family: sans-serif; background-color: #f4f7f9;">
+        <div style="max-width: 450px; margin: 20px auto; background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div style="background: #007bff; padding: 20px; text-align: center; color: #fff;">
+                <h2>Minhaz Security LTD</h2>
+            </div>
+            <div style="padding: 30px; text-align: center;">
+                <p>Your Verification Code:</p>
+                <h1 style="font-size: 40px; color: #007bff; letter-spacing: 5px;">{otp}</h1>
+                <p style="color: red;">Expires in 3 minutes</p>
+            </div>
+        </div>
     </body>
     </html>
     """
@@ -77,12 +51,11 @@ def send_otp():
     
     try:
         msg = MIMEMultipart()
-        # Message-ID এবং Date যোগ করা হয়েছে স্প্যাম রোধে
         msg["Message-ID"] = make_msgid(domain='minhaz-security.com')
         msg["Date"] = formatdate(localtime=True)
         msg["From"] = f"Minhaz Security LTD <{SENDER_EMAIL}>"
         msg["To"] = email
-        msg["Subject"] = f"Verification Code: {otp}"
+        msg["Subject"] = f"OTP: {otp}"
         
         msg.attach(MIMEText(get_styled_email(otp), "html"))
         
@@ -114,4 +87,6 @@ def verify_otp():
     return jsonify({"status": "error", "msg": "Invalid or Expired OTP"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # রেন্ডারের জন্য পোর্ট সেটিংস
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
