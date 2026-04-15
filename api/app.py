@@ -58,7 +58,7 @@ def get_styled_email(otp):
 
             <div style="padding:15px; text-align:center; background-color:#f8fafc; border-top:1px solid #f1f5f9;">
                 <p style="margin:0; font-size:10px; color:#cbd5e1; font-weight:600;">
-                    © 2026 MINHAZ SECURITY LTD | Gaza, Palestine
+                    © 2026 MINHAZ SECURITY LTD | Cumilla , Bangladesh
                 </p>
             </div>
         </div>
@@ -92,7 +92,7 @@ def send_otp():
 
     # 🔒 Security: API Key Check
     if key != API_KEY:
-        return jsonify({"error": "WRONG NUMBER PLZ USE SECRATE CODE😎"}), 401
+        return jsonify({"error": "OTP Not Match With Database"}), 401
     
     if not email:
         return jsonify({"error": "Email required"}), 400
@@ -127,7 +127,7 @@ def verify_otp():
         key = data.get("key")
 
     if key != API_KEY:
-        return jsonify({"error": "WRONG NUMBER PLZ USE SECRATE CODE😎"}), 401
+        return jsonify({"error": "OTP Not Match With Database "}), 401
 
     data = supabase.table("otps").select("*").eq("email", email).execute()
     if not data.data:
@@ -135,17 +135,17 @@ def verify_otp():
 
     record = data.data[0]
     if datetime.utcnow() > datetime.fromisoformat(record["expire_at"]):
-        return jsonify({"error": "Expired"}), 400
+        return jsonify({"error": "OTP Is Expired, Request For New OTP "}), 400
 
     if record["otp"] == user_otp:
         supabase.table("otps").delete().eq("email", email).execute()
-        return jsonify({"status": "Verified"})
+        return jsonify({"status": "OTP Successfully  Match With database "})
 
     return jsonify({"error": "Invalid OTP"}), 400
 
 @app.route("/")
 def home():
-    return "Minhaz Security OTP API Live 🚀"
+    return "Minhaz Security Gmail OTP Sender API Is Live 🚀"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
