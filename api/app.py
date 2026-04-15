@@ -25,55 +25,51 @@ SMTP_PASS = os.environ.get("SMTP_PASS")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-# 🎨 EMAIL DESIGN
+# # 🎨 PRO EMAIL DESIGN (As per Screenshots)
 def get_styled_email(otp):
     return f"""
     <html>
-    <body style="margin:0;padding:0;background:#f4f7f9;font-family:Arial,sans-serif;">
-
-        <div style="max-width:500px;margin:20px auto;background:#ffffff;
-        border-radius:15px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,0.1);">
-
-            <div style="background:#1976d2;padding:20px;text-align:center;color:white;">
-                <h2 style="margin:0;">Minhaz Security LTD</h2>
-                <p style="margin:5px 0 0;font-size:14px;">Your Trusted Security Partner</p>
+    <body style="margin:0;padding:0;background-color:#f1f5f9;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+        <div style="max-width:550px;margin:20px auto;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.05);border: 1px solid #e2e8f0;">
+            
+            <div style="background-color:#007bff;padding:40px 20px;text-align:center;color:#ffffff;">
+                <h1 style="margin:0;font-size:28px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">Minhaz Security LTD</h1>
+                <p style="margin:5px 0 0;font-size:14px;opacity:0.9;">Your Trusted Security Partner</p>
             </div>
 
-            <div style="padding:25px;">
-                
-                <h3 style="color:#1976d2;margin-top:0;">Assalamualikum sir!!</h3>
-
-                <p style="color:#555;font-size:15px;">
-                    Welcome to our service. We keep your account secure. ✊
+            <div style="padding:30px 25px;">
+                <h3 style="color:#007bff;margin:0 0 15px;font-size:18px;">Assalamualikum sir!!</h3>
+                <p style="color:#475569;font-size:15px;line-height:1.6;margin:0;">
+                    Welcome to our service. Thanks for using our service. We do our best to keep your account secure. ✊
                 </p>
 
-                <div style="border:1px dashed #90caf9;border-radius:10px;
-                padding:20px;text-align:center;margin:25px 0;">
-
-                    <p>YOUR VERIFICATION CODE</p>
-
-                    <div style="font-size:36px;font-weight:bold;
-                    letter-spacing:6px;color:#1976d2;">
+                <div style="margin:30px 0;padding:30px;border:1px dashed #007bff;border-radius:10px;text-align:center;background-color:#f8fafc;">
+                    <p style="margin:0 0 15px;font-size:13px;color:#64748b;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">
+                        YOUR VERIFICATION CODE
+                    </p>
+                    <div style="font-size:45px;font-weight:800;color:#007bff;letter-spacing:8px;margin-bottom:10px;">
                         {otp}
                     </div>
-
-                    <p style="color:red;">⏳ Expiring in 3 minutes</p>
+                    <p style="margin:0;font-size:14px;color:#ef4444;">
+                        ⏳ Expiring in 3 minutes
+                    </p>
                 </div>
 
-                <p style="font-size:13px;color:#888;">
-                    Do not share this OTP with anyone.
+                <p style="font-size:13px;color:#64748b;font-style:italic;line-height:1.5;text-align:center;margin-bottom:0;">
+                    Please do not share this code with anyone. Our support team will never ask for your OTP.
                 </p>
             </div>
 
-            <div style="text-align:center;padding:10px;font-size:12px;color:#999;">
-                © 2026 Minhaz Security LTD
+            <div style="padding:20px;text-align:center;background-color:#f8fafc;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;font-size:12px;color:#94a3b8;">
+                    © 2026 Minhaz Security LTD. All rights reserved.
+                </p>
             </div>
-
         </div>
-
     </body>
     </html>
     """
+
 
 
 # 📩 SEND EMAIL
