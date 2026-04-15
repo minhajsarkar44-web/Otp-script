@@ -91,7 +91,7 @@ def send_otp():
     key = request.args.get("key")
 
     if key != API_KEY:
-        return jsonify({"error": "WRONG NUMBER CALL MINHAZ "}), 401
+        return jsonify({"error": "WRONG NUMBER PLZ USE SECRATE CODE😎"}), 401
     if not email:
         return jsonify({"error": "Email required"}), 400
 
@@ -120,7 +120,7 @@ def verify_otp():
         key = data.get("key")
 
     if key != API_KEY:
-        return jsonify({"error": "Unauthorized"}), 401
+        return jsonify({"error": "WRONG NUMBER PLZ USE SECRATE CODE😎"}), 401
 
     data = supabase.table("otps").select("*").eq("email", email).execute()
     if not data.data:
