@@ -8,7 +8,7 @@ from supabase import create_client
 
 app = Flask(__name__)
 
-# 🔐 ENV VARIABLES (আপনার ভেরসেল বা এনভায়রনমেন্টে এগুলো সেট থাকতে হবে)
+# 🔐 ENV VARIABLES
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 API_KEY = os.environ.get("API_KEY")
@@ -19,45 +19,44 @@ SMTP_PASS = os.environ.get("SMTP_PASS")
 # 🗄️ Supabase Client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
-# 🎨 EXACT DESIGN FROM SCREENSHOT
+# 🎨 PREMIUM COMPACT EMAIL DESIGN
 def get_styled_email(otp):
     return f"""
     <html>
-    <body style="margin:0;padding:0;background-color:#f8fafc;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-        <div style="max-width:550px;margin:30px auto;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.05);border: 1px solid #e2e8f0;">
+    <body style="margin:0;padding:0;background-color:#f1f5f9;font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <div style="max-width:480px;margin:20px auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.08);border: 1px solid #e2e8f0;">
             
-            <div style="background-color:#007bff;padding:45px 20px;text-align:center;color:#ffffff;">
-                <h1 style="margin:0;font-size:35px;font-weight:bold;letter-spacing:1px;">Minhaz Security LTD</h1>
-                <p style="margin:8px 0 0;font-size:16px;font-weight:400;opacity:0.9;">Your Trusted Security Partner</p>
+            <div style="background: linear-gradient(135deg, #007bff, #0056b3); padding:35px 20px; text-align:center; color:#ffffff;">
+                <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Minhaz Security LTD</h1>
+                <p style="margin:5px 0 0;font-size:13px;font-weight:300;opacity:0.85;">Your Trusted Security Partner</p>
             </div>
 
-            <div style="padding:40px 30px;">
-                <h3 style="color:#007bff;margin:0 0 15px;font-size:20px;font-weight:bold;">Assalamualikum sir!!</h3>
-                <p style="color:#475569;font-size:16px;line-height:1.6;margin:0;">
-                    Welcome to our service. Thanks for using our service. We do our best to keep your account secure. ✊
+            <div style="padding:30px 25px;">
+                <h3 style="color:#1e293b;margin:0 0 10px;font-size:18px;font-weight:700;">Assalamualikum sir!!</h3>
+                <p style="color:#475569;font-size:14px;line-height:1.5;margin:0;">
+                    Welcome to our service. We prioritize your account's safety. Use the code below to complete your verification. ✊
                 </p>
 
-                <div style="margin:35px 0;padding:35px;border:1.5px dashed #007bff;border-radius:12px;text-align:center;background-color:#fcfdfe;">
-                    <p style="margin:0 0 15px;font-size:14px;color:#64748b;font-weight:bold;text-transform:uppercase;letter-spacing:1.5px;">
-                        YOUR VERIFICATION CODE
+                <div style="margin:25px 0;padding:20px;border:2px solid #f1f5f9;border-radius:12px;text-align:center;background-color:#f8fafc;">
+                    <p style="margin:0 0 10px;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:2px;">
+                        VERIFICATION CODE
                     </p>
-                    <div style="font-size:60px;font-weight:900;color:#007bff;letter-spacing:10px;margin-bottom:10px;">
+                    <div style="font-size:42px;font-weight:800;color:#007bff;letter-spacing:12px;line-height:1;">
                         {otp}
                     </div>
-                    <p style="margin:0;font-size:14px;color:#334155;">
-                        ⌛ Expiring in 3 minutes
+                    <p style="margin:12px 0 0;font-size:12px;color:#64748b;display:flex;align-items:center;justify-content:center;gap:4px;">
+                        <span style="color:#ef4444;">⌛</span> Valid for 3 minutes only
                     </p>
                 </div>
 
-                <p style="font-size:14px;color:#64748b;line-height:1.5;text-align:center;margin-top:20px;">
-                    Please do not share this code with anyone. Our support team will never ask for your OTP.
+                <p style="font-size:12px;color:#94a3b8;line-height:1.4;text-align:center;margin:0;">
+                    Please do not share this code with anyone. Our support team will never ask for your private OTP.
                 </p>
             </div>
 
-            <div style="padding:25px;text-align:center;background-color:#f8fafc;border-top:1px solid #f1f5f9;">
-                <p style="margin:0;font-size:13px;color:#94a3b8;">
-                    © 2026 <b>Minhaz Security LTD.</b> All rights reserved.
+            <div style="padding:20px;text-align:center;background-color:#ffffff;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;font-size:11px;color:#cbd5e1;font-weight:500;">
+                    © 2026 MINHAZ SECURITY LTD • SECURE ACCESS
                 </p>
             </div>
         </div>
@@ -65,24 +64,19 @@ def get_styled_email(otp):
     </html>
     """
 
-
 # 📩 SEND EMAIL
 def send_email(to_email, otp):
     html = get_styled_email(otp)
-
     msg = MIMEText(html, "html")
-    # সাবজেক্টটি আপনার ছবির মতো রাখা হয়েছে
-    msg["Subject"] = f"Verification Code: {otp}"
-    msg["From"] = f"Minhaz Security LTD <{SMTP_EMAIL}>"
+    msg["Subject"] = f"Code: {otp} | Minhaz Security Verification"
+    msg["From"] = f"Minhaz Security <{SMTP_EMAIL}>"
     msg["To"] = to_email
 
-    # Zoho SMTP Config
     server = smtplib.SMTP("smtp.zoho.com", 587)
     server.starttls()
     server.login(SMTP_EMAIL, SMTP_PASS)
     server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
     server.quit()
-
 
 # 🔐 SEND OTP API
 @app.route("/api/send", methods=["GET"])
@@ -92,14 +86,12 @@ def send_otp():
 
     if key != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
-
     if not email:
         return jsonify({"error": "Email required"}), 400
 
     otp = str(random.randint(100000, 999999))
     expire = (datetime.utcnow() + timedelta(minutes=3)).isoformat()
 
-    # Save to Supabase
     supabase.table("otps").upsert({
         "email": email,
         "otp": otp,
@@ -108,10 +100,9 @@ def send_otp():
 
     try:
         send_email(email, otp)
-        return jsonify({"status": "OTP sent", "email": email})
+        return jsonify({"status": "Success", "message": "OTP sent to email"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # 🔐 VERIFY OTP API
 @app.route("/api/verify", methods=["GET", "POST"])
@@ -128,32 +119,27 @@ def verify_otp():
 
     if key != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
-
     if not email or not user_otp:
-        return jsonify({"error": "Missing data"}), 400
+        return jsonify({"error": "Missing parameters"}), 400
 
     data = supabase.table("otps").select("*").eq("email", email).execute()
-
     if not data.data:
-        return jsonify({"error": "OTP not found"}), 404
+        return jsonify({"error": "Record not found"}), 404
 
     record = data.data[0]
     expire_time = datetime.fromisoformat(record["expire_at"])
 
     if datetime.utcnow() > expire_time:
-        return jsonify({"error": "OTP expired"}), 400
-
+        return jsonify({"error": "Code expired"}), 400
     if record["otp"] == user_otp:
         supabase.table("otps").delete().eq("email", email).execute()
-        return jsonify({"status": "Verified"})
+        return jsonify({"status": "Verified", "message": "Authentication successful"})
 
-    return jsonify({"error": "Invalid OTP"}), 400
-
+    return jsonify({"error": "Invalid code"}), 400
 
 @app.route("/")
 def home():
-    return "Minhaz Security OTP API is Live 🚀"
-
+    return "Minhaz Security API - V2 Premium 🚀"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
