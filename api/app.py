@@ -58,7 +58,7 @@ def get_styled_email(otp):
 
             <div style="padding:15px; text-align:center; background-color:#f8fafc; border-top:1px solid #f1f5f9;">
                 <p style="margin:0; font-size:10px; color:#cbd5e1; font-weight:600;">
-                    © 2026 MINHAZ SECURITY LTD | ALL RIGHTS RESERVED
+                    © 2026 MINHAZ SECURITY LTD | Gaza, Palestine
                 </p>
             </div>
         </div>
@@ -90,19 +90,26 @@ def send_otp():
     email = request.args.get("email")
     key = request.args.get("key")
 
+    # 🔒 Security: API Key Check
     if key != API_KEY:
         return jsonify({"error": "WRONG NUMBER PLZ USE SECRATE CODE😎"}), 401
+    
     if not email:
         return jsonify({"error": "Email required"}), 400
 
     otp = str(random.randint(100000, 999999))
     expire = (datetime.utcnow() + timedelta(minutes=3)).isoformat()
 
+    # Save to Database
     supabase.table("otps").upsert({"email": email, "otp": otp, "expire_at": expire}).execute()
 
     try:
         send_email(email, otp)
-        return jsonify({"status": "Success", "otp": otp})
+        # ✅ Fixed: OTP removed from response for security
+        return jsonify({
+            "status": "Success", 
+            "message": "OTP has been sent to your email."
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
