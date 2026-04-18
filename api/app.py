@@ -51,7 +51,7 @@ def get_styled_email(otp):
             <div style="padding:25px 20px; text-align:left;">
                 <h3 style="color:#007bff;margin:0 0 10px;font-size:17px;font-weight:700;">Assalamualikum sir!!</h3>
                 <p style="color:#475569;font-size:14px;line-height:1.5;margin:0;">
-                    Welcome to our service. Thanks for using our service. We do our best to keep your account secure. ✊
+                    Welcome to our service. Thanks for using our service. We do our best to keep your account secure.
                 </p>
 
                 <div style="margin:25px 0; padding:20px; border:2px dashed #007bff; border-radius:12px; text-align:center; background-color:#fcfdfe;">
@@ -75,7 +75,7 @@ def get_styled_email(otp):
 
             <div style="padding:15px; text-align:center; background-color:#f8fafc; border-top:1px solid #f1f5f9;">
                 <p style="margin:0; font-size:10px; color:#cbd5e1; font-weight:600;">
-                    © 2026 MINHAZ SECURITY LTD | Cumilla , Bangladesh
+                    © 2026 MINHAZ SECURITY LTD
                 </p>
             </div>
         </div>
