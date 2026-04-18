@@ -1,12 +1,29 @@
 import os
 import random
 import smtplib
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from supabase import create_client
 
 app = Flask(__name__)
+
+# --- 🌐 CORS HANDLING ---
+@app.after_request
+def add_cors_headers(response):
+    # ✅ Allow all origins (Testing er jonno bhalo, production-e domain name deya uchit)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    # ✅ Allow methods
+    response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    # ✅ Allow headers
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    return response
+
+# Handle OPTIONS preflight manually jodi dorkar hoy
+@app.route("/api/send", methods=["OPTIONS"])
+@app.route("/api/verify", methods=["OPTIONS"])
+def handle_options():
+    return make_response("", 200)
 
 # 🔐 ENV VARIABLES
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
@@ -90,9 +107,8 @@ def send_otp():
     email = request.args.get("email")
     key = request.args.get("key")
 
-    # 🔒 Security: API Key Check
     if key != API_KEY:
-        return jsonify({"error": "OTP Not Match With Database"}), 401
+        return jsonify({"error": "Unauthorized Access"}), 401
     
     if not email:
         return jsonify({"error": "Email required"}), 400
@@ -100,12 +116,10 @@ def send_otp():
     otp = str(random.randint(100000, 999999))
     expire = (datetime.utcnow() + timedelta(minutes=3)).isoformat()
 
-    # Save to Database
     supabase.table("otps").upsert({"email": email, "otp": otp, "expire_at": expire}).execute()
 
     try:
         send_email(email, otp)
-        # ✅ Fixed: OTP removed from response for security
         return jsonify({
             "status": "Success", 
             "message": "OTP has been sent to your email."
@@ -127,19 +141,19 @@ def verify_otp():
         key = data.get("key")
 
     if key != API_KEY:
-        return jsonify({"error": "OTP Not Match With Database "}), 401
+        return jsonify({"error": "Unauthorized Access"}), 401
 
     data = supabase.table("otps").select("*").eq("email", email).execute()
     if not data.data:
-        return jsonify({"error": "Not found"}), 404
+        return jsonify({"error": "OTP Record Not found"}), 404
 
     record = data.data[0]
     if datetime.utcnow() > datetime.fromisoformat(record["expire_at"]):
-        return jsonify({"error": "OTP Is Expired, Request For New OTP "}), 400
+        return jsonify({"error": "OTP Is Expired, Request For New OTP"}), 400
 
     if record["otp"] == user_otp:
         supabase.table("otps").delete().eq("email", email).execute()
-        return jsonify({"status": "OTP Successfully  Match With database "})
+        return jsonify({"status": "OTP Successfully Matched"})
 
     return jsonify({"error": "Invalid OTP"}), 400
 
