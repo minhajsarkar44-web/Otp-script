@@ -25,6 +25,7 @@ def add_cors(res):
     res.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return res
 
+# Gmail sender design
 
 def get_styled_email(otp):
     return f"""
@@ -87,35 +88,23 @@ def send_email(to_email, otp):
     server.quit()
 
 
-# 🔐 SEND OTP
-@app.route("/api/send", methods=["GET", "POST", "OPTIONS"])
-def send_otp():
-    if request.method == "OPTIONS":
-        return add_cors(jsonify({}))
-
-    email = request.args.get("email") or (request.json and request.json.get("email"))
-    key = request.args.get("key") or (request.json and request.json.get("key"))
-
-    if key != API_KEY:
-        return add_cors(jsonify({"error": "Unauthorized"})), 401
-
-    if not email:
-        return add_cors(jsonify({"error": "Email required"})), 400
-
-    otp = str(random.randint(100000, 999999))
-    expire = (datetime.utcnow() + timedelta(minutes=3)).isoformat()
-
-    supabase.table("otps").upsert({
-        "email": email,
-        "otp": otp,
-        "expire_at": expire
-    }).execute()
+# 📩 SEND EMAIL
+def send_email(to_email, otp):
+    html = get_styled_email(otp)
+    msg = MIMEText(html, "html")
+    msg["Subject"] = f"Verification Code: {otp}"
+    msg["From"] = f"Minhaz Security LTD <{SMTP_EMAIL}>"
+    msg["To"] = to_email
 
     try:
-        send_email(email, otp)
-        return add_cors(jsonify({"status": "OTP sent"}))
+        server = smtplib.SMTP("smtp.zoho.com", 587)
+        server.starttls()
+        server.login(SMTP_EMAIL, SMTP_PASS)
+        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        server.quit()
     except Exception as e:
-        return add_cors(jsonify({"error": str(e)})), 500
+        print(f"Error: {e}")
+        raise
 
 
 # 🔐 VERIFY OTP
