@@ -16,10 +16,16 @@ API_KEY = os.environ.get("API_KEY")
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
 SMTP_PASS = os.environ.get("SMTP_PASS")
 
-# 🗄️ Supabase Client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# 🎨 REFINED EMAIL DESIGN (V4)
+# 🌐 CORS FIX (IMPORTANT)
+def add_cors(res):
+    res.headers["Access-Control-Allow-Origin"] = "*"
+    res.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    res.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return res
+
+
 def get_styled_email(otp):
     return f"""
     <html>
@@ -66,86 +72,94 @@ def get_styled_email(otp):
     </html>
     """
 
+
 # 📩 SEND EMAIL
 def send_email(to_email, otp):
-    html = get_styled_email(otp)
-    msg = MIMEText(html, "html")
-    msg["Subject"] = f"Verification Code: {otp}"
-    msg["From"] = f"Minhaz Security LTD <{SMTP_EMAIL}>"
+    msg = MIMEText(get_styled_email(otp), "html")
+    msg["Subject"] = "Your OTP Code"
+    msg["From"] = SMTP_EMAIL
     msg["To"] = to_email
 
-    try:
-        server = smtplib.SMTP("smtp.zoho.com", 587)
-        server.starttls()
-        server.login(SMTP_EMAIL, SMTP_PASS)
-        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
-        server.quit()
-    except Exception as e:
-        print(f"Error: {e}")
-        raise
+    server = smtplib.SMTP("smtp.zoho.com", 587)
+    server.starttls()
+    server.login(SMTP_EMAIL, SMTP_PASS)
+    server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+    server.quit()
 
-# 🔐 SEND OTP API
-@app.route("/api/send", methods=["GET"])
+
+# 🔐 SEND OTP
+@app.route("/api/send", methods=["GET", "POST", "OPTIONS"])
 def send_otp():
-    email = request.args.get("email")
-    key = request.args.get("key")
+    if request.method == "OPTIONS":
+        return add_cors(jsonify({}))
 
-    # 🔒 Security: API Key Check
+    email = request.args.get("email") or (request.json and request.json.get("email"))
+    key = request.args.get("key") or (request.json and request.json.get("key"))
+
     if key != API_KEY:
-        return jsonify({"error": "OTP Not Match With Database"}), 401
-    
+        return add_cors(jsonify({"error": "Unauthorized"})), 401
+
     if not email:
-        return jsonify({"error": "Email required"}), 400
+        return add_cors(jsonify({"error": "Email required"})), 400
 
     otp = str(random.randint(100000, 999999))
     expire = (datetime.utcnow() + timedelta(minutes=3)).isoformat()
 
-    # Save to Database
-    supabase.table("otps").upsert({"email": email, "otp": otp, "expire_at": expire}).execute()
+    supabase.table("otps").upsert({
+        "email": email,
+        "otp": otp,
+        "expire_at": expire
+    }).execute()
 
     try:
         send_email(email, otp)
-        # ✅ Fixed: OTP removed from response for security
-        return jsonify({
-            "status": "Success", 
-            "message": "OTP has been sent to your email."
-        })
+        return add_cors(jsonify({"status": "OTP sent"}))
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return add_cors(jsonify({"error": str(e)})), 500
 
-# 🔐 VERIFY OTP API
-@app.route("/api/verify", methods=["GET", "POST"])
+
+# 🔐 VERIFY OTP
+@app.route("/api/verify", methods=["GET", "POST", "OPTIONS"])
 def verify_otp():
-    if request.method == "GET":
-        email = request.args.get("email")
-        user_otp = request.args.get("otp")
-        key = request.args.get("key")
-    else:
-        data = request.json
-        email = data.get("email")
-        user_otp = data.get("otp")
-        key = data.get("key")
+    if request.method == "OPTIONS":
+        return add_cors(jsonify({}))
+
+    data = request.json if request.method == "POST" else request.args
+
+    email = data.get("email")
+    user_otp = data.get("otp")
+    key = data.get("key")
 
     if key != API_KEY:
-        return jsonify({"error": "OTP Not Match With Database "}), 401
+        return add_cors(jsonify({"error": "Unauthorized"})), 401
 
-    data = supabase.table("otps").select("*").eq("email", email).execute()
-    if not data.data:
-        return jsonify({"error": "Not found"}), 404
+    result = supabase.table("otps").select("*").eq("email", email).execute()
 
-    record = data.data[0]
+    if not result.data:
+        return add_cors(jsonify({"error": "Not found"})), 404
+
+    record = result.data[0]
+
     if datetime.utcnow() > datetime.fromisoformat(record["expire_at"]):
-        return jsonify({"error": "OTP Is Expired, Request For New OTP "}), 400
+        return add_cors(jsonify({"error": "OTP expired"})), 400
 
     if record["otp"] == user_otp:
         supabase.table("otps").delete().eq("email", email).execute()
-        return jsonify({"status": "OTP Successfully  Match With database "})
+        return add_cors(jsonify({"status": "verified"}))
 
-    return jsonify({"error": "Invalid OTP"}), 400
+    return add_cors(jsonify({"error": "Invalid OTP"})), 400
 
+
+# 🏠 HOME
 @app.route("/")
 def home():
-    return "Minhaz Security Gmail OTP Sender API Is Live 🚀"
+    return "OTP API is running 🚀"
+
+
+# Vercel handler
+def handler(event, context):
+    return app(event, context)
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run()
